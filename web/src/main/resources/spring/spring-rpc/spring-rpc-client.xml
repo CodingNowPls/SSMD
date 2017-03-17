@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+	     http://www.springframework.org/schema/beans/spring-beans-4.3.xsd">
+
+	<bean id="demoRpcService" class="org.hisoka.rpc.dubbo.client.DubboClient">
+		<property name="interfaceName" value="com.sztx.demo.rpc.api.service.DemoRpcService" />
+		<property name="protocol" value="dubbo" />
+	</bean>
+
+	<bean id="testRpcService" class="org.hisoka.rpc.dubbo.client.DubboClient">
+		<property name="interfaceName" value="com.sztx.demo.rpc.api.service.TestRpcService" />
+		<property name="protocol" value="dubbo" />
+	</bean>
+
+	<bean id="dynamicDubboClient" class="org.hisoka.rpc.dubbo.apply.DynamicDubboClient">
+		<property name="openLog" value="${logback.dubbo.openLog}" />
+	</bean>
+
+	<bean id="dynamicCreateDubboClientManager" class="org.hisoka.rpc.dubbo.apply.DynamicCreateDubboClientManager">
+		<property name="dynamicDubboClient" ref="dynamicDubboClient" />
+	</bean>
+
+</beans>

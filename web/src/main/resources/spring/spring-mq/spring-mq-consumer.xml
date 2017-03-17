@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+	   http://www.springframework.org/schema/beans/spring-beans-4.3.xsd">
+
+	<!-- 消息处理器 -->
+	<bean id="messageConsumer" class="org.hisoka.demo.core.mq.DemoMqMessageListener" />
+
+	<!-- 用于消息的监听的代理类 -->
+	<bean id="rabbitListenerAdapter" class="org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter">
+		<constructor-arg index="0" ref="messageConsumer" />
+		<constructor-arg index="1" ref="messageConverter" />
+	</bean>
+
+	<!-- 用于消息的监听的容器 -->
+	<bean id="messageListenerContainer" class="org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer">
+		<property name="connectionFactory" ref="connectionFactory" />
+		<property name="messageListener" ref="rabbitListenerAdapter" />
+		<property name="autoStartup" value="false" />
+	</bean>
+
+	<!-- 消息监听容器代理 -->
+	<bean id="mqListenerContainerProxy" class="org.hisoka.core.mq.consumer.MqListenerContainerProxy">
+		<property name="queueNames" value="${mq.listener.queues}" />
+		<property name="messageListenerContainer" ref="messageListenerContainer" />
+		<property name="autoStartup" value="${mq.listener.auto.startup}" />
+	</bean>
+
+	<bean id="dynamicMqListenerContainer" class="org.hisoka.core.mq.apply.DynamicMqListenerContainer">
+		<property name="openLog" value="${logback.mq.openLog}" />
+	</bean>
+	
+	<bean id="dynamicCreateMqListenerManager" class="org.hisoka.core.mq.apply.DynamicCreateMqListenerManager">
+		<property name="dynamicMqListenerContainer" ref="dynamicMqListenerContainer" />
+	</bean>
+	
+</beans>

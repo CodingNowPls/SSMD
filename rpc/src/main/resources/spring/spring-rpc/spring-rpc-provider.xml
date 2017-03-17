@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+		http://code.alibabatech.com/schema/dubbo
+		http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+	<!-- 声明需要暴露的服务接口 -->
+	<dubbo:service interface="org.hisoka.demo.rpc.api.service.DemoRpcService" ref="demoService" />
+
+	<!-- 和本地bean一样实现服务 -->
+	<bean id="demoService" class="org.hisoka.demo.rpc.service.DemoRpcServiceImpl" />
+
+</beans>

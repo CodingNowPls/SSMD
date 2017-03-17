@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:p="http://www.springframework.org/schema/p"
+	   xmlns:tx="http://www.springframework.org/schema/tx"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+		http://www.springframework.org/schema/tx
+		http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+
+	<!-- PostgreSQL::org.postgresql.ds.PGSimpleDataSource -->
+	<bean id="PGSimpleDataSource" class="org.postgresql.ds.PGSimpleDataSource">
+		<property name="serverName" value="${jdbc.serverName}" />
+		<property name="databaseName" value="${jdbc.databaseName}" />
+		<property name="portNumber" value="${jdbc.port}" />
+		<property name="user" value="${jdbc.user}" />
+		<property name="password" value="${jdbc.password}" />
+	</bean>
+
+	<!-- HikariDataSource:: dataSource-->
+	<bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource">
+		<property name="dataSource" ref="PGSimpleDataSource" />
+		<property name="poolName" value="${jdbc.poolName}" />
+		<property name="MinimumIdle" value="${jdbc.MinimumIdle}" />
+		<property name="maximumPoolSize" value="${jdbc.maxPoolSize}" />
+		<property name="connectionTestQuery" value="${jdbc.connectionTestQuery}" />
+	</bean>
+
+	<bean id="dataSourceProxy" class="org.hisoka.orm.relative.client.DataSourceProxy">
+		<property name="dataSource" ref="dataSource" />
+		<property name="dbName" value="${jdbc.db}" />
+		<property name="dataSourceKey" value="${jdbc.key}" />
+		<property name="isDefault" value="${jdbc.isDefault}" />
+		<property name="slaveDataSourceMap">
+			<map>	</map>
+		</property>
+	</bean>
+
+	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource" ref="dynamicDataSource" />
+	</bean>
+
+	<!-- sqlSessionFactory -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean" p:typeAliasesPackage="com.sztx.demo.dataaccess.domain">
+		<property name="dataSource" ref="dynamicDataSource" />
+		<property name="configLocation" value="classpath:/sqlmap-config.xml" />
+	</bean>
+
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer" p:basePackage="com.sztx.demo.dataaccess.dao.sql"
+		  p:sqlSessionFactoryBeanName="sqlSessionFactory" />
+
+	<bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg index="0" ref="sqlSessionFactory" />
+	</bean>
+
+	<!-- 事务注解驱动 -->
+	<tx:annotation-driven transaction-manager="transactionManager" />
+
+	<!-- 事务管理 -->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dynamicDataSource" />
+	</bean>
+
+	<bean id="dynamicDataSource" class="org.hisoka.orm.relative.apply.DynamicDataSource">
+		<property name="targetDataSources">
+			<map>
+				<entry value-ref="dataSource" key="${jdbc.key}" />
+			</map>
+		</property>
+		<property name="lenientFallback" value="false" />
+		<property name="openLog" value="${log.sql.openLog}" />
+		<property name="logLength" value="${log.sql.logLength}" />
+		<property name="ignorePattern" value="${log.sql.ignorePattern}" />
+		<property name="slowLimit" value="${jdbc.slowQuery.limit}" />
+	</bean>
+
+	<bean id="dynamicCreateDataSourceManager" class="org.hisoka.orm.relative.apply.DynamicDataSourceManager">
+		<property name="dynamicDataSource" ref="dynamicDataSource" />
+	</bean>
+
+</beans>
